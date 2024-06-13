@@ -7,12 +7,15 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 
 const loader = new GLTFLoader();
 
 let stats;
 let camera, scene, renderer;
 let controls, water, sun, mesh, model;
+let keys = {}; // Object to track the state of each key
+let controlsP;
 
 class Boat {
   constructor() {
@@ -21,7 +24,7 @@ class Boat {
       model = gltf.scene;
       scene.add(model);
       model.position.set(0, 2, 0);
-      model.rotation.y = 550
+      model.rotation.y = 550;
       model.scale.set(10, 10, 10);
 
       this.boat = model;
@@ -85,6 +88,7 @@ function init() {
         texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
       }
     ),
+    side: THREE.DoubleSide,
     sunDirection: new THREE.Vector3(),
     sunColor: 0xffffff,
     waterColor: 0x001e0f,
@@ -157,7 +161,22 @@ function init() {
   controls.update();
 
   //
+  //
+  // Set up PointerLockControls
+  controlsP = new PointerLockControls(camera, renderer.domElement);
 
+  // Add event listener for click to enable pointer lock
+  document.addEventListener(
+    "click",
+    () => {
+      controlsP.lock();
+    },
+    false
+  );
+
+  scene.add(controlsP.getObject());
+
+  //
   stats = new Stats();
   document.body.appendChild(stats.dom);
 
@@ -183,25 +202,40 @@ function init() {
 
   window.addEventListener("resize", onWindowResize);
 
+  // Event listener for keydown
   window.addEventListener("keydown", function (event) {
-    switch (event.key) {
-      case "ArrowUp":
-        boat.speed.vel = 1;
-        break;
-      case "ArrowDown":
-        boat.speed.vel = -1;
-        break;
-      case "ArrowRight":
-        boat.speed.rot = 0.01;
-        break;
-      case "ArrowLeft":
-        boat.speed.rot = -0.01;
-        break;
-    }
+    keys[event.key] = true;
+    updateBoat();
   });
+
+  // Event listener for keyup
   window.addEventListener("keyup", function (event) {
-    boat.stop();
+    keys[event.key] = false;
+    updateBoat();
   });
+
+  function updateBoat() {
+    if (keys["ArrowUp"]) {
+      boat.speed.vel = 1;
+    } else if (keys["ArrowDown"]) {
+      boat.speed.vel = -1;
+    } else {
+      boat.speed.vel = 0; // Stop if neither Up nor Down is pressed
+    }
+
+    // Update the boat's rotation only if ArrowUp or ArrowDown is pressed
+    if (keys["ArrowUp"] || keys["ArrowDown"]) {
+      if (keys["ArrowRight"]) {
+        boat.speed.rot = -0.01;
+      } else if (keys["ArrowLeft"]) {
+        boat.speed.rot = 0.01;
+      } else {
+        boat.speed.rot = 0; // Stop rotating if neither Right nor Left is pressed
+      }
+    } else {
+      boat.speed.rot = 0; // Stop rotating if neither ArrowUp nor ArrowDown is pressed
+    }
+  }
 }
 
 function onWindowResize() {
@@ -225,6 +259,23 @@ function render() {
   mesh.rotation.z = time * 0.51;
 
   water.material.uniforms["time"].value += 1.0 / 60.0;
+  let moveSpeed = 1;
+  let moveForward = keys["w"] || keys["W"];
+  let moveBackward = keys["s"] || keys["S"];
+  let moveLeft = keys["a"] || keys["A"];
+  let moveRight = keys["d"] || keys["D"];
 
+  if (moveForward) {
+    controlsP.moveForward(moveSpeed);
+  }
+  if (moveBackward) {
+    controlsP.moveForward(-moveSpeed);
+  }
+  if (moveLeft) {
+    controlsP.moveRight(-moveSpeed);
+  }
+  if (moveRight) {
+    controlsP.moveRight(moveSpeed);
+  }
   renderer.render(scene, camera);
 }
