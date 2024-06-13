@@ -1,0 +1,11 @@
+Model Information:
+* title:	Bass Boat
+* source:	https://sketchfab.com/3d-models/bass-boat-147d601e20514b2a877cbf99005c4000
+* author:	BoatUS Foundation (https://sketchfab.com/boatusfoundation)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Bass Boat" (https://sketchfab.com/3d-models/bass-boat-147d601e20514b2a877cbf99005c4000) by BoatUS Foundation (https://sketchfab.com/boatusfoundation) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
