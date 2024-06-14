@@ -12,26 +12,30 @@ import { PointerLockControls } from "three/examples/jsm/controls/PointerLockCont
 const loader = new GLTFLoader();
 
 let stats;
-let camera, scene, renderer;
-let controls, water, sun, mesh, model;
+let camera, scene, renderer, distance;
+let controls, water, sun, model, player, boat;
+let inBoat = false;
+let prompt = document.getElementById("prompt");
 let keys = {}; // Object to track the state of each key
 let controlsP;
 
 class Boat {
   constructor() {
-    loader.load("models/boat/bass_boat_2/scene.gltf", (gltf) => {
-      console.log(gltf);
-      model = gltf.scene;
-      scene.add(model);
-      model.position.set(0, 2, 0);
-      model.rotation.y = 550;
-      model.scale.set(10, 10, 10);
+    this.initPromise = new Promise((resolve, reject) => {
+      loader.load("models/boat/bass_boat_2/scene.gltf", (gltf) => {
+        console.log(gltf);
+        model = gltf.scene;
+        scene.add(model);
+        model.position.set(0, 2, 0);
+        model.rotation.y = 550;
+        model.scale.set(10, 10, 10);
 
-      this.boat = model;
-      this.speed = {
-        vel: 0,
-        rot: 0,
-      };
+        this.boat = model;
+        this.speed = {
+          vel: 0,
+          rot: 0,
+        };
+      });
     });
   }
   update() {
@@ -45,8 +49,6 @@ class Boat {
     this.speed.rot = 0;
   }
 }
-
-const boat = new Boat();
 
 init();
 
@@ -62,6 +64,7 @@ function init() {
   //
 
   scene = new THREE.Scene();
+  boat = new Boat();
 
   camera = new THREE.PerspectiveCamera(
     55,
@@ -143,16 +146,6 @@ function init() {
 
   updateSun();
 
-  //
-
-  const geometry = new THREE.BoxGeometry(30, 30, 30);
-  const material = new THREE.MeshStandardMaterial({ roughness: 0 });
-
-  mesh = new THREE.Mesh(geometry, material);
-  // scene.add(mesh);
-
-  //
-
   controls = new OrbitControls(camera, renderer.domElement);
   controls.maxPolarAngle = Math.PI * 0.495;
   controls.target.set(0, 10, 0);
@@ -203,14 +196,32 @@ function init() {
   window.addEventListener("resize", onWindowResize);
 
   // Event listener for keydown
-  window.addEventListener("keydown", function (event) {
+  window.addEventListener("keydown", (event) => {
     keys[event.key] = true;
+    console.log(inBoat);
+    if (event.key === "Enter" && prompt.style.display === "block" && boat) {
+      if (inBoat) {
+        console.log("outside boat");
+        enterBoat();
+      }
+      console.log(inBoat);
+    } else if (
+      event.key === "Enter" &&
+      prompt.style.display === "none" &&
+      boat
+    ) {
+      if (inBoat) {
+        console.log("inside boat");
+        exitBoat();
+      }
+    }
     updateBoat();
   });
 
   // Event listener for keyup
   window.addEventListener("keyup", function (event) {
     keys[event.key] = false;
+
     updateBoat();
   });
 
@@ -236,8 +247,17 @@ function init() {
       boat.speed.rot = 0; // Stop rotating if neither ArrowUp nor ArrowDown is pressed
     }
   }
+  checkBoatInitialization();
 }
 
+function checkBoatInitialization() {
+  if (!boat) {
+    setTimeout(checkBoatInitialization, 500); // Retry after 100ms if boat is not fully initialized
+  } else {
+    // Boat is fully initialized, start animation loop
+    return;
+  }
+}
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -246,18 +266,63 @@ function onWindowResize() {
 }
 
 function animate() {
-  render();
   stats.update();
   boat.update();
+  render();
 }
 
 function render() {
-  const time = performance.now() * 0.001;
+  renderer.render(scene, camera);
+  {
+  // try {
+  //   if (!inBoat) {
+  //     // Player movement
+  //     let moveSpeed = 0.1;
+  //     if (keys["w"]) controlsP.moveForward(moveSpeed);
+  //     if (keys["s"]) controlsP.moveForward(-moveSpeed);
+  //     if (keys["a"]) controlsP.moveRight(-moveSpeed);
+  //     if (keys["d"]) controlsP.moveRight(moveSpeed);
 
-  mesh.position.y = Math.sin(time) * 20 + 5;
-  mesh.rotation.x = time * 0.5;
-  mesh.rotation.z = time * 0.51;
+  //     // Check proximity to boat
+  //     if (camera && boat && boat.boat) {
+  //       let distance = camera.position.distanceTo(boat.boat.position);
+  //       if (distance < 60) {
+  //         prompt.style.display = "block";
+  //       } else {
+  //         prompt.style.display = "none";
+  //       }
+  //     } else {
+  //       console.warn("Camera or boat is undefined.");
+  //     }
+  //   } else {
+  //     // Boat movement
+  //     if (boat) {
+  //       boat.update();
+  //     }
 
+  //     let moveSpeed = 1;
+  //     if (keys["w"]) boat.speed.vel = moveSpeed;
+  //     if (keys["s"]) boat.speed.vel = -moveSpeed;
+  //     if (keys["a"]) boat.speed.rot = 0.05;
+  //     if (keys["d"]) boat.speed.rot = -0.05;
+
+  //     if (!keys["w"] && !keys["s"]) boat.speed.vel = 0;
+  //     if (!keys["a"] && !keys["d"]) boat.speed.rot = 0;
+
+  //     if (camera && boat && boat.boat) {
+  //       camera.position.copy(boat.boat.position);
+  //       camera.position.y += 15.6; // Adjust vertical position (height) inside the boat
+  //       camera.position.z += 25.6; // Adjust vertical position (height) inside the boat
+  //       // Set camera rotation to look out of the boat
+  //       // boat.boat.getWorldDirection(camera.getWorldDirection());
+  //       camera.rotation.copy(boat.boat.rotation);
+  //       camera.rotation.y += Math.PI; // Rotate 180 degrees to face the opposite direction
+  //     }
+  //   }
+  // } catch (error) {
+  //   console.error("Error rendering:", error);
+  // }
+  }
   water.material.uniforms["time"].value += 1.0 / 60.0;
   let moveSpeed = 1;
   let moveForward = keys["w"] || keys["W"];
@@ -278,4 +343,23 @@ function render() {
     controlsP.moveRight(moveSpeed);
   }
   renderer.render(scene, camera);
+}
+function enterBoat() {
+  console.log("entering boat");
+  inBoat = true;
+  prompt.style.display = "none";
+  controlsP.unlock();
+}
+function exitBoat() {
+  console.log("exiting boat");
+  inBoat = false;
+  // Restore controls and camera position
+  // controlsP.lock(); // Lock controls when exiting the boat
+  camera.position.set(
+    boat.boat.position.x,
+    boat.boat.position.y + 2,
+    boat.boat.position.z - 50
+  ); // Position camera slightly behind the boat
+  // controlsP.unlock(); // Lock controls when exiting the boat
+  prompt.style.display = "block";
 }
