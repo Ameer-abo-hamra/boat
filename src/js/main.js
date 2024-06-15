@@ -8,7 +8,6 @@ import { showLoadingScreen, hideLoadingScreen } from "./scripts/loadingScreen";
 let camera, scene, renderer, controlsO, controlsP;
 let water, boat;
 const state = { inBoat: false };
-// let inBoat = false;
 let prompt = document.getElementById("prompt");
 let keys = {}; // Object to track the state of each key
 
@@ -32,8 +31,6 @@ async function init() {
   controlsO.maxDistance = 200.0;
   controlsO.update();
 
-  //
-  //
   // Set up PointerLockControls
   controlsP = new PointerLockControls(camera, renderer.domElement);
 
@@ -45,8 +42,6 @@ async function init() {
     },
     false
   );
-
-  // scene.add(controlsP.getObject());
 
   window.addEventListener("resize", onWindowResize);
 

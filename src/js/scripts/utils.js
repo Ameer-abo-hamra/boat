@@ -24,7 +24,7 @@ export function animate(
   keys,
   state,
   prompt,
-  water,
+  water
 ) {
   const deltaTime = 0.016; // Assume a fixed time step for simplicity
 
@@ -66,18 +66,30 @@ function handlePlayerMovement(keys, controls) {
 
 // Handle boat movement with arrow keys
 function handleBoatMovement(keys, boat, deltaTime) {
-  const moveSpeed = 50;
-  boat.speed.vel = keys["arrowup"]
-    ? moveSpeed * deltaTime
-    : keys["arrowdown"]
-    ? -moveSpeed * deltaTime
-    : 0;
-  boat.speed.rot = keys["arrowleft"]
-    ? 0.2 * deltaTime
-    : keys["arrowright"]
-    ? -0.2 * deltaTime
-    : 0;
-  boat.update();
+  //   const moveSpeed = 50;
+  //   boat.speed.vel = keys["arrowup"]
+  //     ? moveSpeed * deltaTime
+  //     : keys["arrowdown"]
+  //     ? -moveSpeed * deltaTime
+  //     : 0;
+  //   boat.speed.rot = keys["arrowleft"]
+  //     ? 0.2 * deltaTime
+  //     : keys["arrowright"]
+  //     ? -0.2 * deltaTime
+  //     : 0;
+  if (keys["arrowup"]) {
+    boat.accelerate(10);
+  }
+  if (keys["arrowdown"]) {
+    boat.accelerate(-10);
+  }
+  if (keys["arrowleft"]) {
+    boat.turn(1);
+  }
+  if (keys["arrowright"]) {
+    boat.turn(-1);
+  }
+  boat.update(deltaTime);
 }
 
 // Update camera position and rotation to stay in the boat
