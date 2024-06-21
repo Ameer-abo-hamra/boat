@@ -1,8 +1,12 @@
 import * as THREE from "three";
+// import { check } from "./Boat";
+
 // Handle key down events
-export function handleKeyDown(event, keys, boat, state, enterBoat, exitBoat) {
+export function   handleKeyDown(event, keys, boat, state, enterBoat, exitBoat) {
   //   console.log(event.key.toLowerCase());
   keys[event.key.toLowerCase()] = true;
+  handleBoatMovement(keys, boat);
+
   if (event.key === "Enter" && boat && boat.isLoaded()) {
     // console.log(state.inBoat);
     state.inBoat ? exitBoat() : enterBoat();
@@ -10,8 +14,12 @@ export function handleKeyDown(event, keys, boat, state, enterBoat, exitBoat) {
 }
 
 // Handle key up events
-export function handleKeyUp(event, keys) {
+export function handleKeyUp(event, keys, boat) {
   keys[event.key.toLowerCase()] = false;
+  if(event.key.toLowerCase()=="arrowup") {
+    boat.isMoving = false ; 
+    console.log(boat.isMoving)
+  }
 }
 
 // Main animation loop
@@ -30,14 +38,14 @@ export function animate(
 
   function render() {
     // console.log(inBoat);
-    handleBoatMovement(keys, boat, deltaTime);
+    // handleBoatMovement(keys, boat, deltaTime);
     if (!state.inBoat) {
       //   console.log("out");
       handlePlayerMovement(keys, controls);
       updatePromptVisibility(camera, boat, prompt);
     } else if (state.inBoat) {
       //   console.log("in");
-      handleBoatMovement(keys, boat, deltaTime);
+      // handleBoatMovement(keys, boat, deltaTime);
       updateCameraInBoat(camera, boat);
     }
 
@@ -50,6 +58,7 @@ export function animate(
   function loop() {
     requestAnimationFrame(loop);
     render();
+    boat.check();
   }
 
   loop();
@@ -66,30 +75,21 @@ function handlePlayerMovement(keys, controls) {
 
 // Handle boat movement with arrow keys
 function handleBoatMovement(keys, boat, deltaTime) {
-  //   const moveSpeed = 50;
-  //   boat.speed.vel = keys["arrowup"]
-  //     ? moveSpeed * deltaTime
-  //     : keys["arrowdown"]
-  //     ? -moveSpeed * deltaTime
-  //     : 0;
-  //   boat.speed.rot = keys["arrowleft"]
-  //     ? 0.2 * deltaTime
-  //     : keys["arrowright"]
-  //     ? -0.2 * deltaTime
-  //     : 0;
+
   if (keys["arrowup"]) {
-    boat.accelerate(10);
+    boat.isMoving = true ; 
+    console.log(boat.isMoving)
   }
   if (keys["arrowdown"]) {
-    boat.accelerate(-10);
+    // boat.accelerate(-1);
   }
   if (keys["arrowleft"]) {
-    boat.turn(1);
+    // boat.turn(0.1);
   }
   if (keys["arrowright"]) {
-    boat.turn(-1);
+    // boat.turn(-0.1);
   }
-  boat.update(deltaTime);
+  // boat.update(de);
 }
 
 // Update camera position and rotation to stay in the boat

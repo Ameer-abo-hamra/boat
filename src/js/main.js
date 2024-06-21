@@ -45,24 +45,13 @@ async function init() {
 
   window.addEventListener("resize", onWindowResize);
 
-
   // Call the animate function with all required parameters
-  animate(
-    boat,
-    camera,
-    scene,
-    renderer,
-    controlsP,
-    keys,
-    state,
-    prompt,
-    water,
-  );
+  animate(boat, camera, scene, renderer, controlsP, keys, state, prompt, water);
   // Add event listeners for keyboard inputs
   window.addEventListener("keydown", (event) =>
     handleKeyDown(event, keys, boat, state, enterBoat, exitBoat)
   );
-  window.addEventListener("keyup", (event) => handleKeyUp(event, keys));
+  window.addEventListener("keyup", (event) => handleKeyUp(event, keys, boat));
 }
 
 function onWindowResize() {
@@ -73,7 +62,7 @@ function onWindowResize() {
 }
 
 function enterBoat() {
-  if(prompt.style.display === "none"){
+  if (prompt.style.display === "none") {
     return;
   }
   console.log("Entering boat");
