@@ -87,3 +87,11 @@ function exitBoat() {
   controlsP.unlock();
   controlsO.enabled = true;
 }
+
+setInterval(()=> {
+
+  // console.log(boat.calcFb());
+  // console.log(boat.calcAccelerate());
+  console.log(boat.calcFd());
+  // console.log(boat.calcFb());
+},2000);  

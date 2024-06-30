@@ -59,7 +59,7 @@ export function animate(
     requestAnimationFrame(loop);
     render();
     boat.check();
-  }
+  } 
 
   loop();
 }
@@ -77,8 +77,8 @@ function handlePlayerMovement(keys, controls) {
 function handleBoatMovement(keys, boat, deltaTime) {
 
   if (keys["arrowup"]) {
-    boat.isMoving = true ; 
-    console.log(boat.isMoving)
+    // boat.isMoving = true ; 
+    // console.log(boat.isMoving)
   }
   if (keys["arrowdown"]) {
     // boat.accelerate(-1);

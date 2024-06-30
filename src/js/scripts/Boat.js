@@ -2,7 +2,7 @@ import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/Addons.js";
 let Vars = {
-  m: 10000,
+  m: 1000,
   g: 9.8,
   p: 1000,
   v: 10,
@@ -20,7 +20,7 @@ export class Boat {
       let moviing = setInterval(() => {
         if (this.isMoving) {
           this.move();
-          console.log("boat now is moving ")
+          console.log("boat now is moving ");
           clearInterval(moviing);
         }
       }, 100);
@@ -31,54 +31,77 @@ export class Boat {
       rot: 0,
     };
     this.gui();
-    this.m = new THREE.Vector3(0, 1000, 0);
-    this.Power = 50;
-    this.w = 500;
-    this.Vfan = 100;
-    this.V0 = new THREE.Vector3(0, 0, 0);
+    this.m = 1000
+    this.Power = new THREE.Vector3(1, 1, 500);
+    this.weight = new THREE.Vector3(1, 1, 1);
+    this.Vfan = 10;
     this.rho = 1000;
     this.A = 10;
-    this.accelerate = new THREE.Vector3(0, 0, 0);
+    this.accelerate = new THREE.Vector3(1, 1, 1);
     this.cd = 0.0001;
-    this.Fthrust = new THREE.Vector3(0, 0, 0);
-    this.Fd = new THREE.Vector3(0, 0, 0);
-    this.V_air = 1;
-    this.V_water = 1.5;
+    this.Fthrust = new THREE.Vector3(1, 1, 1);
+    this.Fd = new THREE.Vector3(1, 1, 1);
+    this.Fb = new THREE.Vector3(1, 1, 1);
+    // this.V_air = 1;
+    this.V_water = 1;
     this.initPromise = this.loadBoatModel();
-    this.g = 9.8;
+    this.g = new THREE.Vector3(1, 9.8, 1);
     this.Drowning = false;
     this.isMoving = false;
-    this.updateState();
+    this.calcFthrust();
+    this.calcFd();
+    this.calcFb();
+    this.calcWeight();
   }
-
+  // updates 
+  // calcFd() {
+  //   let test = new THREE.Vector3(
+  //     0,
+  //     0,
+  //     0.5 * this.rho * this.cd * this.A * this.V_water* this.V_water
+  //   );
+  //   this.Fd.copy(test);
+  //   return this.Fd;
+  // }
   calcFthrust() {
-    return new THREE.Vector3(0, 0, this.Vfan * this.Power);
+    let test = new THREE.Vector3();
+    test.copy(this.Power);
+    test.multiplyScalar(this.Vfan);
+    return this.Fthrust.copy(test);
   }
 
-  updateState() {
-    this.Fthrust.add(this.calcFthrust());
-  }
-  calcFd() {
-    return this.Fd.add(-0.5 * this.rho * this.cd * this.A * this.V, 1, 1);
-  }
-  calcV0() {
-    let sqrtValue = Math.sqrt((2 * this.P * 10) / this.m.y);
 
-    this.V0.set(this.V0.x + 0, this.V0.y + 0, sqrtValue);
 
-    return this.V0;
+  calcFb() {
+    let test = new THREE.Vector3();
+    test.copy(this.g);
+    test.multiplyScalar(this.V_water).multiplyScalar(this.rho);
+    return this.Fb.copy(test);
+  }
+
+  calcWeight() {
+    let test = new THREE.Vector3(0, this.m * this.g.y, 0);
+    this.weight.copy(test);
+
+    return this.weight;
   }
 
   calcAccelerate() {
-    return this.accelerate();
+    let test = new THREE.Vector3(0, 0, 0);
+
+    test.add(this.Fthrust).sub(this.Fd).add(this.Fb).sub(this.weight);
+
+    let accelerate = new THREE.Vector3();
+
+    if (this.m !== 0 && this.m !== 0 && this.m !== 0) {
+      accelerate.set(test.x / this.m, test.y / this.m, test.z / this.m);
+    } else {
+      return "lkml";
+    }
+
+    return this.accelerate.copy(accelerate);
   }
 
-  calcFb() {
-    return this.rho * this.g * this.V_water;
-  }
-  calcWieght() {
-    return this.g * this.m.y;
-  }
   async loadBoatModel() {
     const loader = new GLTFLoader();
     const gltf = await loader.loadAsync("models/boat/bass_boat_2/scene.gltf");
@@ -97,8 +120,8 @@ export class Boat {
     let gui = new GUI();
     const BoatFolder = gui.addFolder("Boat");
     BoatFolder.add(Vars, "m", 500, 2000).onChange((value) => {
-      this.m.y = value;
-      console.log(this.m.y);
+      this.m = value;
+      console.log(this.m);
     });
     BoatFolder.add(Vars, "g", 5, 20).onChange((value) => {
       this.g = value;
@@ -107,7 +130,7 @@ export class Boat {
   }
 
   check() {
-    if (this.calcFb() < this.calcWieght()) {
+    if (this.calcFb().y < this.calcWeight().y) {
       this.Drowning = true;
     }
   }
@@ -123,13 +146,13 @@ export class Boat {
 
   move() {
     let move = setInterval(() => {
-        if(this.isMoving) {
-          this.boat.position.z -=0.05
-          console.log(this.boat.position.z)
-        }else {
-          console.log("done")
-          clearInterval(move)
-        }
+      if (this.isMoving) {
+        this.boat.position.z -= 0.05;
+        console.log(this.boat.position.z);
+      } else {
+        console.log("done");
+        clearInterval(move);
+      }
     }, 10);
   }
 }
