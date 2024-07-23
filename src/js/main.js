@@ -91,7 +91,8 @@ function exitBoat() {
 setInterval(()=> {
 
   // console.log(boat.calcFb());
+  // console.log(boat.calcFd());
+  // console.log(boat.calcFthrust());
+  // console.log(boat.calcWeight());
   // console.log(boat.calcAccelerate());
-  console.log(boat.calcFd());
-  // console.log(boat.calcFb());
 },2000);  

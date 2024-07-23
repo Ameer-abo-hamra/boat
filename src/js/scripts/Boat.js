@@ -31,7 +31,7 @@ export class Boat {
       rot: 0,
     };
     this.gui();
-    this.m = 1000
+    this.m = 1000;
     this.Power = new THREE.Vector3(1, 1, 500);
     this.weight = new THREE.Vector3(1, 1, 1);
     this.Vfan = 10;
@@ -42,27 +42,29 @@ export class Boat {
     this.Fthrust = new THREE.Vector3(1, 1, 1);
     this.Fd = new THREE.Vector3(1, 1, 1);
     this.Fb = new THREE.Vector3(1, 1, 1);
-    // this.V_air = 1;
-    this.V_water = 1;
+    this.speed_Air = new THREE.Vector3(1, 1, 20);
+    this.speed_Water = new THREE.Vector3(1, 1, 1);
+    this.volume_Water = this.m/this.rho
     this.initPromise = this.loadBoatModel();
-    this.g = new THREE.Vector3(1, 9.8, 1);
+    this.g = new THREE.Vector3(0, 9.8, 0);
     this.Drowning = false;
     this.isMoving = false;
     this.calcFthrust();
     this.calcFd();
     this.calcFb();
     this.calcWeight();
+    this.clearInterval = 0 ;
   }
-  // updates 
-  // calcFd() {
-  //   let test = new THREE.Vector3(
-  //     0,
-  //     0,
-  //     0.5 * this.rho * this.cd * this.A * this.V_water* this.V_water
-  //   );
-  //   this.Fd.copy(test);
-  //   return this.Fd;
-  // }
+  calcFd() {
+    let x = this.rho * this.A * this.cd * 0.5;
+    let V = new THREE.Vector3(0, 0, 0);
+    V.add(this.speed_Air);
+    V.add(this.speed_Water);
+    V.set(V.x * V.x, V.y * V.y, V.z * V.z);
+    V.multiplyScalar(x);
+    this.Fd.copy(V)
+    return this.Fd;
+  }
   calcFthrust() {
     let test = new THREE.Vector3();
     test.copy(this.Power);
@@ -70,12 +72,10 @@ export class Boat {
     return this.Fthrust.copy(test);
   }
 
-
-
   calcFb() {
     let test = new THREE.Vector3();
     test.copy(this.g);
-    test.multiplyScalar(this.V_water).multiplyScalar(this.rho);
+    test.multiplyScalar(this.volume_Water).multiplyScalar(this.rho);
     return this.Fb.copy(test);
   }
 
@@ -98,8 +98,8 @@ export class Boat {
     } else {
       return "lkml";
     }
-
-    return this.accelerate.copy(accelerate);
+    this.accelerate.copy(accelerate)
+    return this.accelerate;
   }
 
   async loadBoatModel() {
@@ -130,29 +130,25 @@ export class Boat {
   }
 
   check() {
-    if (this.calcFb().y < this.calcWeight().y) {
-      this.Drowning = true;
-    }
+    this.calcAccelerate();
   }
 
   drowing() {
     let d = setInterval(() => {
-      this.boat.position.y -= 0.01;
+      this.boat.position.y -= 0.0001;
       if (this.boat.position.y < -16) {
         clearInterval(d);
       }
     }, 1);
   }
 
-  move() {
-    let move = setInterval(() => {
-      if (this.isMoving) {
-        this.boat.position.z -= 0.05;
-        console.log(this.boat.position.z);
-      } else {
-        console.log("done");
-        clearInterval(move);
-      }
-    }, 10);
-  }
+  // move() {
+  //   let time = 0 ; 
+  
+  
+  // }
+
+  // stop() {
+  
+  // }
 }

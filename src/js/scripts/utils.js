@@ -1,8 +1,10 @@
 import * as THREE from "three";
+import { log } from "three/examples/jsm/nodes/Nodes.js";
 // import { check } from "./Boat";
-
+let clearIntervalId = 0;
+let time = 0;
 // Handle key down events
-export function   handleKeyDown(event, keys, boat, state, enterBoat, exitBoat) {
+export function handleKeyDown(event, keys, boat, state, enterBoat, exitBoat) {
   //   console.log(event.key.toLowerCase());
   keys[event.key.toLowerCase()] = true;
   handleBoatMovement(keys, boat);
@@ -16,9 +18,16 @@ export function   handleKeyDown(event, keys, boat, state, enterBoat, exitBoat) {
 // Handle key up events
 export function handleKeyUp(event, keys, boat) {
   keys[event.key.toLowerCase()] = false;
-  if(event.key.toLowerCase()=="arrowup") {
-    boat.isMoving = false ; 
-    console.log(boat.isMoving)
+  if (event.key.toLowerCase() == "arrowup") {
+    clearInterval(clearIntervalId);
+    clearIntervalId = null;
+    let x = setInterval(() => {
+      time += 1 / 100;
+      console.log(time);
+      if (time >= 0) {
+        clearInterval(x);
+      }
+    }, 10);
   }
 }
 
@@ -58,8 +67,16 @@ export function animate(
   function loop() {
     requestAnimationFrame(loop);
     render();
-    boat.check();
-  } 
+    boat.calcAccelerate();
+    console.log(boat.accelerate.z);
+    boat.volume_Water = boat.m / boat.rho;
+    if (boat.boat.position.y - 1.5 < boat.volume_Water) {
+      boat.drowing();
+    }
+    boat.boat.position.z = -boat.accelerate.z * 0.5 * time * time;
+
+    console.log(boat.accelerate.z * 0.5 * time * time);
+  }
 
   loop();
 }
@@ -75,10 +92,12 @@ function handlePlayerMovement(keys, controls) {
 
 // Handle boat movement with arrow keys
 function handleBoatMovement(keys, boat, deltaTime) {
-
-  if (keys["arrowup"]) {
-    // boat.isMoving = true ; 
-    // console.log(boat.isMoving)
+  if (keys["arrowup"] && !clearIntervalId) {
+    // let time = 0;
+    clearIntervalId = setInterval(() => {
+      time += -1 / 100;
+      console.log(time);
+    }, 10);
   }
   if (keys["arrowdown"]) {
     // boat.accelerate(-1);
